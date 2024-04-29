@@ -1,0 +1,28 @@
+﻿@using CarWorkshop.ViewModels.Admin
+@model EmployeeManagementVM
+
+@{
+	ViewData["Title"] = "Employee Management";
+}
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Email</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var user in Model.Employees!)
+		{
+			<tr>
+				<td>@user.Name</td>
+				<td>@user.Email</td>
+				<td>
+					<a asp-area="Admin" asp-controller="EmployeeManagement" asp-action="RemoveEmployee" asp-route-id="@user.Id">Edit</a>
+					<a asp-area="Admin" asp-controller="EmployeeManagement" asp-action="RemoveEmployee" asp-route-id="@user.Id">Remove</a>
+				</td>
+			</tr>
+		}
+	</tbody>
