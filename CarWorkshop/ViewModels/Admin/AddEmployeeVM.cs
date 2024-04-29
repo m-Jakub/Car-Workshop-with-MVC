@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
-namespace CarWorkshop.ViewModels
+namespace CarWorkshop.ViewModels.Admin
 {
-    public class RegisterVM
+    public class AddEmployeeVM
     {
         [Required]
         public string? Name { get; set; }
