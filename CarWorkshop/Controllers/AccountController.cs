@@ -9,8 +9,13 @@ namespace CarWorkshop.Controllers
     public class AccountController : Controller
     {
         private readonly SignInManager<AppUser> signInManager;
+        private readonly UserManager<AppUser> userManager;
 
-        public AccountController(SignInManager<AppUser> signInManager) => this.signInManager = signInManager;
+        public AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager)
+        {
+            this.signInManager = signInManager;
+            this.userManager = userManager;
+        }
 
         public IActionResult Login()
         {
@@ -41,9 +46,38 @@ namespace CarWorkshop.Controllers
             return View();
         }
 
-        public IActionResult Logout()
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterVM model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                var user = new AppUser
+                {
+                    Name = model.Name,
+                    UserName = model.Email,
+                    Email = model.Email,
+                };
+
+                var result = await userManager.CreateAsync(user, model.Password!);
+
+                if (result.Succeeded)
+                {
+                    await signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            return View(model);
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            await signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
     }
 }
