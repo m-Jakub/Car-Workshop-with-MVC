@@ -1,4 +1,4 @@
-﻿@using CarWorkshop.ViewModels;
+﻿@* @using CarWorkshop.ViewModels;
 @using CarWorkshop.ViewModels.Admin;
 @model AddEmployeeVM
 
@@ -41,6 +41,76 @@
 				<a asp-action="EmployeeManagement" class="btn btn-secondary">Cancel</a>
 			</div>
 
+			@if (ViewData["Error"] != null)
+			{
+				<div class="alert alert-danger mt-3">
+					@ViewData["Error"]
+				</div>
+			}
+		</form>
+	</div>
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+} *@
+
+@using CarWorkshop.ViewModels.Admin
+@model AddEmployeeVM
+
+@{
+	ViewData["Title"] = Model.IsEdit ? "Edit Employee" : "Add Employee";
+}
+
+<div class="container mt-5 d-flex justify-content-center">
+	<div class="card shadow-sm p-4" style="width: 500px;">
+		<h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+		<!-- Determine the form action based on context -->
+		<form asp-action='@Model.IsEdit ? "EditEmployee" : "AddEmployee"' method="post">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+			<!-- Name field -->
+			<div class="form-group mb-3">
+				<label asp-for="Name" class="form-label">Name</label>
+				<input asp-for="Name" class="form-control" />
+				<span asp-validation-for="Name" class="text-danger"></span>
+			</div>
+
+			<!-- Email field -->
+			<div class="form-group mb-3">
+				<label asp-for="Email" class="form-label">Email</label>
+				<input asp-for="Email" class="form-control" />
+				<span asp-validation-for="Email" class="text-danger"></span>
+			</div>
+
+			<!-- Conditionally render password fields for adding only -->
+			@if (!Model.IsEdit)
+			{
+				<div class="form-group mb-3">
+					<label asp-for="Password" class="form-label">Password</label>
+					<input asp-for="Password" type="password" class="form-control" />
+					<span asp-validation-for="Password" class="text-danger"></span>
+				</div>
+
+				<div class="form-group mb-3">
+					<label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+					<input asp-for="ConfirmPassword" type="password" class="form-control" />
+					<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+				</div>
+			}
+
+			<!-- Form submission buttons -->
+			<div class="d-flex justify-content-between">
+				<button type="submit" class="btn btn-primary">
+					@Model.IsEdit ? "Save Changes" : "Add Employee"
+				</button>
+				<a asp-action="EmployeeManagement" class="btn btn-secondary">Cancel</a>
+			</div>
+
+			<!-- Error messages -->
 			@if (ViewData["Error"] != null)
 			{
 				<div class="alert alert-danger mt-3">

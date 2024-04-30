@@ -1,0 +1,11 @@
+﻿@model AppUser
+
+<h2>Are you sure you want to remove this employee?</h2>
+
+<form asp-action="RemoveEmployeeConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <p>Name: @Model.Name</p>
+    <p>Email: @Model.Email</p>
+    <button type="submit" class="btn btn-danger">Remove</button>
+    <a asp-action="EmployeeManagement" class="btn btn-secondary">Cancel</a>
+</form>
