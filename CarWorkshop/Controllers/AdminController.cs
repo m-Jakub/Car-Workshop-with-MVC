@@ -118,56 +118,121 @@ public class AdminController : Controller
         return View(model);
     }
 
+    // [HttpPost]
+    // public async Task<IActionResult> EditEmployee(string? id, EditEmployeeVM model)
+    // {
+    //     if (id == null)
+    //     {
+    //         return NotFound();
+    //     }
+
+    //     if (ModelState.IsValid)
+    //     {
+    //         var employee = await _context.Users.FindAsync(id);
+
+    //         if (employee == null)
+    //         {
+    //             return NotFound();
+    //         }
+
+    //         employee.Name = model.Name;
+    //         employee.Email = model.Email;
+    //         employee.UserName = model.Email;
+
+    //         if (!string.IsNullOrEmpty(model.Password) && !string.IsNullOrEmpty(model.ConfirmPassword))
+    //         {
+    //             if (model.Password != model.ConfirmPassword)
+    //             {
+    //                 ModelState.AddModelError(string.Empty, "New password and confirmation password do not match.");
+    //                 return View(model);
+    //             }
+
+    //             var token = await _userManager.GeneratePasswordResetTokenAsync(employee);
+
+    //             var passwordResult = await _userManager.ResetPasswordAsync(employee, token, model.Password);
+
+    //             if (!passwordResult.Succeeded)
+    //             {
+    //                 foreach (var error in passwordResult.Errors)
+    //                 {
+    //                     ModelState.AddModelError(string.Empty, error.Description);
+    //                 }
+    //                 return View(model);
+    //             }
+    //         }
+
+    //         _context.Update(employee);
+    //         await _context.SaveChangesAsync();
+
+    //         return RedirectToAction("EmployeeManagement");
+    //     }
+
+    //     return View(model);
+    // }
+
     [HttpPost]
-    public async Task<IActionResult> EditEmployee(string? id, EditEmployeeVM model)
+public async Task<IActionResult> EditEmployee(string? id, EditEmployeeVM model)
+{
+    if (id == null)
     {
-        if (id == null)
+        return NotFound();
+    }
+
+    if (ModelState.IsValid)
+    {
+        var employee = await _userManager.FindByIdAsync(id);
+
+        if (employee == null)
         {
             return NotFound();
         }
 
-        if (ModelState.IsValid)
+        // Update properties
+        employee.Name = model.Name;
+        employee.Email = model.Email;
+        employee.UserName = model.Email;
+
+        // Update the user using UserManager
+        var updateResult = await _userManager.UpdateAsync(employee);
+
+        if (!updateResult.Succeeded)
         {
-            var employee = await _context.Users.FindAsync(id);
-
-            if (employee == null)
+            foreach (var error in updateResult.Errors)
             {
-                return NotFound();
+                ModelState.AddModelError(string.Empty, error.Description);
             }
-
-            employee.Name = model.Name;
-            employee.Email = model.Email;
-
-            if (!string.IsNullOrEmpty(model.Password) && !string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                if (model.Password != model.ConfirmPassword)
-                {
-                    ModelState.AddModelError(string.Empty, "New password and confirmation password do not match.");
-                    return View(model);
-                }
-
-                var token = await _userManager.GeneratePasswordResetTokenAsync(employee);
-
-                var passwordResult = await _userManager.ResetPasswordAsync(employee, token, model.Password);
-
-                if (!passwordResult.Succeeded)
-                {
-                    foreach (var error in passwordResult.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    }
-                    return View(model);
-                }
-            }
-
-            _context.Update(employee);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction("EmployeeManagement");
+            return View(model);
         }
 
-        return View(model);
+        // Password update
+        if (!string.IsNullOrEmpty(model.Password) && !string.IsNullOrEmpty(model.ConfirmPassword))
+        {
+            if (model.Password != model.ConfirmPassword)
+            {
+                ModelState.AddModelError(string.Empty, "New password and confirmation password do not match.");
+                return View(model);
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(employee);
+
+            var passwordResult = await _userManager.ResetPasswordAsync(employee, token, model.Password);
+
+            if (!passwordResult.Succeeded)
+            {
+                foreach (var error in passwordResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View(model);
+            }
+        }
+
+        return RedirectToAction("EmployeeManagement");
     }
+
+    return View(model);
+}
+
 
     public async Task<IActionResult> RemoveEmployee(string? id)
     {
