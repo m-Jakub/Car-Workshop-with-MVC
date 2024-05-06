@@ -13,6 +13,10 @@ namespace CarWorkshop.ViewModels.Admin
         public string? Email { get; set; }
 
         [Required]
+        [Range(0, 1000)]
+        public decimal HourlyRate { get; set; }
+
+        [Required]
         [DataType(DataType.Password)]
         public string? Password { get; set; }
 

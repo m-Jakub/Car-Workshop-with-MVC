@@ -19,6 +19,7 @@
             <tr>
                 <th>Name</th>
                 <th>Email</th>
+                <th>Hourly Rate</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -26,8 +27,9 @@
             @foreach (var user in Model.Employees)
             {
                 <tr>
-                    <td>@user.Name</td>
-                    <td>@user.Email</td>
+                    <td>@Html.DisplayFor(modelItem => user.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => user.Email)</td>
+                    <td>@Html.DisplayFor(modelItem => user.HourlyRate)</td>
                     <td>
                         <a asp-action="EditEmployee" asp-route-id="@user.Id" class="btn btn-secondary">Edit</a>
                         <a asp-action="RemoveEmployee" asp-route-id="@user.Id" class="btn btn-danger">Remove</a>
@@ -36,4 +38,8 @@
             }
         </tbody>
     </table>
+}
+else
+{
+    <p>No employees found.</p>
 }
