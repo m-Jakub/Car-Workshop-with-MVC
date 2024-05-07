@@ -15,10 +15,18 @@ namespace CarWorkshop.Data
 		{
 			base.OnModelCreating(modelBuilder);
 
-			// Configure the HourlyRate property of the AppUser entity
+			// Configure HourlyRate
 			modelBuilder.Entity<AppUser>()
 				.Property(u => u.HourlyRate)
-				.HasColumnType("decimal(18, 2)"); // Adjust precision and scale as needed
+				.HasColumnType("decimal(18, 2)");
+
+			// Configure relationship between CalendarEvent and AppUser
+			modelBuilder.Entity<CalendarEvent>()
+				.HasOne(c => c.Employee)
+				.WithMany()
+				.HasForeignKey(c => c.EmployeeId);
 		}
+		public DbSet<CalendarEvent> CalendarEvents { get; set; }
+
 	}
 }
