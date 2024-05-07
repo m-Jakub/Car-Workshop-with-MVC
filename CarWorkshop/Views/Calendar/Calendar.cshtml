@@ -39,19 +39,18 @@
             /* Divide remaining width equally among day columns */
         }
 
-        /* Set background color for empty cells */
-        .empty-cell {
-            background-color: lightgray;
+        /* Style when cursor hovers over day columns */
+        .day-column:hover {
+            background-color: #f0f0f0;
+            /* Light gray background color */
         }
     </style>
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/css/bootstrap.min.css">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -76,9 +75,11 @@
                     <td class="time-column">@hour:00 - @(hour + 1):00</td>
                     @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
                     {
-                        var eventsForDay = Model.FirstOrDefault(x => x.Key.DayOfWeek == dayOfWeek).Value ?? new List<CalendarEvent>();
+                        var eventsForDay = Model.FirstOrDefault(x => x.Key.DayOfWeek == dayOfWeek).Value ?? new
+                        List<CalendarEvent>();
                         var eventsForHour = eventsForDay.Where(e => e.Date.Hour == hour).ToList();
-                        <td class="day-column" onclick="showPopup(@hour, '@dayOfWeek', '@eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? 'Empty')">
+                        <td class="day-column"
+                            onclick="showPopup(@hour, '@dayOfWeek', '@(eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? "Unavailable")')">
                             @if (eventsForHour.Any())
                             {
                                 @foreach (var e in eventsForHour)
@@ -98,24 +99,23 @@
     </table>
 
     <!-- Popup modal -->
-    <div id="popupModal" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+    <div class="modal fade" id="popupModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Event Details</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p id="eventDetails"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
+
 
     <script>
         function showPopup(hour, dayOfWeek, status) {
