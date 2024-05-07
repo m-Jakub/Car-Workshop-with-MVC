@@ -6,6 +6,7 @@ using CarWorkshop.Data;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Security.Claims;
 
 
 [Authorize(Roles = "Employee")]
@@ -62,5 +63,28 @@ public class EmployeeController : Controller
         // If model state is not valid, return to the calendar view with errors
         return View("Calendar", updatedEvents);
     }
+
+    [HttpPost]
+    public IActionResult AddTimeSlot(DateTime date, TimeSpan time, string status)
+    {
+        // Retrieve the currently logged-in employee
+        var employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        // Create a new CalendarEvent object
+        var newEvent = new CalendarEvent
+        {
+            Date = date.Date + time, // Combine the date and time
+            EmployeeId = employeeId,
+            AvailabilityStatus = status,
+        };
+
+        // Add the new event to the database
+        _context.CalendarEvents.Add(newEvent);
+        _context.SaveChanges();
+
+        // Redirect to the Calendar view
+        return RedirectToAction("Calendar");
+    }
+
 }
 

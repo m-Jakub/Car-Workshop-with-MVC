@@ -2,7 +2,9 @@
 
 <!DOCTYPE html>
 <html>
+
 <head>
+
     <title>Schedule</title>
     <style>
         /* Add border-collapse to the table */
@@ -10,6 +12,7 @@
             border-collapse: collapse;
             width: 100%;
         }
+
         /* Style for table header */
         .table th {
             background-color: #f2f2f2;
@@ -17,143 +20,113 @@
             padding: 8px;
             text-align: left;
         }
+
         /* Style for table cells */
         .table td {
             border: 1px solid #dddddd;
             padding: 8px;
             text-align: left;
         }
+
         /* Style for time column */
         .time-column {
             width: 120px;
         }
+
         /* Style for day columns */
         .day-column {
-            width: calc((100% - 100px) / 7); /* Divide remaining width equally among day columns */
+            width: calc((100% - 100px) / 7);
+            /* Divide remaining width equally among day columns */
         }
+
         /* Set background color for empty cells */
         .empty-cell {
             background-color: lightgray;
         }
     </style>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/css/bootstrap.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.min.js"></script>
 </head>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery -->
-
-<!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Modal for selecting availability status -->
-<div id="availabilityModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Select Availability Status</h2>
-        <form id="availabilityForm">
-            <label for="availabilityStatus">Availability Status:</label>
-            <select id="availabilityStatus" name="availabilityStatus">
-                <option value="Available">Available</option>
-                <option value="Busy">Busy</option>
-                <!-- Add more options as needed -->
-            </select>
-            <button type="submit">Confirm</button>
-        </form>
-    </div>
-</div>
-
-<script>
-    $(document).ready(function () {
-        $('.interactive-cell').on('click', function () {
-            // Get date and hour from data attributes
-            var date = $(this).data('date');
-            var hour = $(this).data('hour');
-
-            // Show the availability modal
-            $('#availabilityModal').css('display', 'block');
-
-            // When the user clicks on <span> (x), close the modal
-            $('.close').on('click', function () {
-                $('#availabilityModal').css('display', 'none');
-            });
-
-            // When the user clicks anywhere outside of the modal, close it
-            $(window).on('click', function (event) {
-                if (event.target == $('#availabilityModal')[0]) {
-                    $('#availabilityModal').css('display', 'none');
-                }
-            });
-
-            // Submit form when confirm button is clicked
-            $('#availabilityForm').on('submit', function (event) {
-                event.preventDefault();
-                var availabilityStatus = $('#availabilityStatus').val();
-
-                // Send AJAX request to the controller
-                $.ajax({
-                    url: '/Calendar/AddAvailabilitySlot',
-                    type: 'POST',
-                    data: {
-                        date: date,
-                        hour: hour,
-                        availabilityStatus: availabilityStatus
-                    },
-                    success: function (response) {
-                        // Handle success response
-                        console.log(response);
-                        $('#availabilityModal').css('display', 'none');
-                    },
-                    error: function (xhr, status, error) {
-                        // Handle error
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-        });
-    });
-</script>
-
-
 
 <body>
 
-<h2>Schedule</h2>
+    <h2>Schedule</h2>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th class="time-column">Time</th> <!-- Set fixed width for the time column -->
-            @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
-            {
-                <th class="day-column">@dayOfWeek.ToString().Substring(0, 3)</th> <!-- Set fixed width for the day columns -->
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @for (int hour = 6; hour < 20; hour++)
-        {
+    <table class="table">
+        <thead>
             <tr>
-                <td class="time-column">@hour:00 - @(hour + 1):00</td>
+                <th class="time-column">Time</th> <!-- Set fixed width for the time column -->
                 @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
                 {
-                    var eventsForDay = Model.FirstOrDefault(x => x.Key.DayOfWeek == dayOfWeek).Value ?? new List<CalendarEvent>();
-                    var eventsForHour = eventsForDay.Where(e => e.Date.Hour == hour).ToList();
-                    <td class="day-column">
-                        @if (eventsForHour.Any())
-                        {
-                            @foreach (var e in eventsForHour)
-                            {
-                                <div>@e.AvailabilityStatus</div>
-                            }
-                        }
-                        else
-                        {
-                            <div class="empty-cell">&nbsp;</div> <!-- Placeholder for empty cell -->
-                        }
-                    </td>
+                    <th class="day-column">@dayOfWeek.ToString().Substring(0, 3)</th>
+                    <!-- Set fixed width for the day columns -->
                 }
             </tr>
+        </thead>
+        <tbody>
+            @for (int hour = 6; hour < 20; hour++)
+            {
+                <tr>
+                    <td class="time-column">@hour:00 - @(hour + 1):00</td>
+                    @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
+                    {
+                        var eventsForDay = Model.FirstOrDefault(x => x.Key.DayOfWeek == dayOfWeek).Value ?? new List<CalendarEvent>();
+                        var eventsForHour = eventsForDay.Where(e => e.Date.Hour == hour).ToList();
+                        <td class="day-column" onclick="showPopup(@hour, '@dayOfWeek', '@eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? 'Empty')">
+                            @if (eventsForHour.Any())
+                            {
+                                @foreach (var e in eventsForHour)
+                                {
+                                    <div>@e.AvailabilityStatus</div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-cell">&nbsp;</div> <!-- Placeholder for empty cell -->
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Popup modal -->
+    <div id="popupModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Event Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p id="eventDetails"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPopup(hour, dayOfWeek, status) {
+            // Set the content of the popup
+            document.getElementById('eventDetails').innerText = `Time: ${hour}:00 - ${hour + 1}:00\nDay: ${dayOfWeek}\nStatus: ${status}`;
+
+            // Show the popup modal
+            $('#popupModal').modal('show');
         }
-    </tbody>
-</table>
+    </script>
 
 </body>
+
 </html>
