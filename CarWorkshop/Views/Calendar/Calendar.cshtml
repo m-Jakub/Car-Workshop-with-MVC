@@ -1,4 +1,5 @@
-﻿@model Dictionary<DateTime, List<CalendarEvent>>
+﻿@model Dictionary<DayOfWeek, Dictionary<int, List<CalendarEvent>>>
+
 
 <!DOCTYPE html>
 <html>
@@ -48,7 +49,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
@@ -75,12 +76,14 @@
                     <td class="time-column">@hour:00 - @(hour + 1):00</td>
                     @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
                     {
-                        var eventsForDay = Model.FirstOrDefault(x => x.Key.DayOfWeek == dayOfWeek).Value ?? new
-                        List<CalendarEvent>();
-                        var eventsForHour = eventsForDay.Where(e => e.Date.Hour == hour).ToList();
+                        var eventsForHour = Model.TryGetValue(dayOfWeek, out var eventsForDay)
+                        && eventsForDay.TryGetValue(hour, out var events)
+                        ? events
+                        : new List<CalendarEvent>();
+
                         <td class="day-column"
-                            onclick="showPopup(@hour, '@dayOfWeek', '@(eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? "Unavailable")')">
-                            @if (eventsForHour.Any())
+                            onclick="showPopup(@hour, '@dayOfWeek', '@(eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? "Unavailable")', @(eventsForHour.FirstOrDefault()?.CalendarEventId ?? 0))">
+                            @if (eventsForHour != null && eventsForHour.Any())
                             {
                                 @foreach (var e in eventsForHour)
                                 {
@@ -92,6 +95,8 @@
                                 <div class="empty-cell">&nbsp;</div> <!-- Placeholder for empty cell -->
                             }
                         </td>
+
+
                     }
                 </tr>
             }
@@ -99,7 +104,7 @@
     </table>
 
     <!-- Popup modal -->
-    <div class="modal fade" id="popupModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div id="popupModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -108,6 +113,20 @@
                 </div>
                 <div class="modal-body">
                     <p id="eventDetails"></p>
+                    <!-- Form for changing status -->
+                    <form id="changeStatusForm" method="post" onsubmit="submitChangeStatus(event)">
+                        <input type="hidden" id="eventId" name="eventId">
+                        <input type="hidden" id="date" name="date">
+                        <input type="hidden" id="hour" name="hour">
+                        <div class="mb-3">
+                            <label for="newStatus" class="form-label">Change Status:</label>
+                            <select id="newStatus" name="newStatus" class="form-select">
+                                <option value="Available">Available</option>
+                                <option value="Busy">Busy</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Status</button>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -117,14 +136,81 @@
     </div>
 
 
+
+
     <script>
-        function showPopup(hour, dayOfWeek, status) {
+        function showPopup(hour, dayOfWeek, status, eventId) {
+            console.log('dayOfWeek:', dayOfWeek); // Debugging the dayOfWeek parameter
             // Set the content of the popup
             document.getElementById('eventDetails').innerText = `Time: ${hour}:00 - ${hour + 1}:00\nDay: ${dayOfWeek}\nStatus: ${status}`;
+
+            // Set the form fields
+            document.getElementById('eventId').value = eventId;
+            document.getElementById('newStatus').value = status;
+            document.getElementById('hour').value = hour;
 
             // Show the popup modal
             $('#popupModal').modal('show');
         }
+
+
+        function submitChangeStatus(event) {
+            event.preventDefault();
+            const form = document.getElementById('changeStatusForm');
+            const formData = new FormData(form);
+
+            fetch('@Url.Action("ChangeStatus", "Employee")', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Status changed successfully!');
+                        // Refresh only the affected parts of the calendar view if possible
+                        location.reload();
+                    } else {
+                        alert('Failed to change status: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to change status: ' + error.message);
+                });
+        }
+
+        function fetchEventsForDate(date) {
+            fetch(`/Employee/GetEventsForDate?date=${date.toISOString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Process the data and update the calendar view
+                    updateCalendarView(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                });
+        }
+
+        function updateCalendarView(data) {
+            // Clear existing calendar view data (if necessary)
+            // Then, process the data to fill the cells with event statuses
+
+            // Iterate through the data and update the cells in the view
+            data.forEach(event => {
+                const eventTime = new Date(event.Date); // Convert event.Date to a Date object
+                const hour = eventTime.getHours(); // Get the hour from the event's time
+                const dayOfWeek = eventTime.getDay(); // Get the day of the week from the event's date
+
+                // Find the corresponding cell in the table based on hour and dayOfWeek
+                const cell = document.querySelector(`td[data-hour="${hour}"][data-dayofweek="${dayOfWeek}"]`);
+
+                if (cell) {
+                    // Update the cell with the event's AvailabilityStatus
+                    cell.textContent = event.AvailabilityStatus;
+                }
+            });
+        }
+
     </script>
 
 </body>

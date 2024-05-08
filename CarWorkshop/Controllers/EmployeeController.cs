@@ -19,26 +19,55 @@ public class EmployeeController : Controller
         _context = context;
     }
 
+    [HttpGet]
+    public IActionResult GetEventsForDate(DayOfWeek dayOfWeek)
+    {
+        // Query the database for CalendarEvent instances occurring on the specified day of the week
+        var eventsForDate = _context.CalendarEvents
+            .Where(e => e.DayOfWeek == dayOfWeek) // Filter by day of the week
+            .ToList(); // Execute the query and retrieve the list
+
+        // Return the list as a JSON response
+        return Json(eventsForDate);
+    }
+
+
+
     // GET: Employee/Calendar
     public IActionResult Calendar()
     {
-        // Retrieve events for the current week (for demonstration purposes)
+        // Calculate the start and end dates of the current week
         DateTime startDate = DateTime.Today.StartOfWeek(DayOfWeek.Monday);
         DateTime endDate = startDate.AddDays(6);
 
+        // Query the database for CalendarEvent instances occurring within the specified date range
         var events = _context.CalendarEvents
-            .Where(e => e.Date >= startDate && e.Date <= endDate)
+            .Where(e => e.DayOfWeek >= startDate.DayOfWeek && e.DayOfWeek <= endDate.DayOfWeek)
             .ToList();
 
-        // Group events by date
-        var eventsByDate = events.GroupBy(e => e.Date.Date)
-            .ToDictionary(g => g.Key, g => g.ToList());
+        // Group the events by day of the week and hour of the day
+        // Group the events by day of the week and hour of the day
+        var eventsByDayAndHour = events
+            .GroupBy(e => new { e.DayOfWeek, e.Hour }) // Group by DayOfWeek and Hour
+            .GroupBy(g => g.Key.DayOfWeek, g => g)
+            .ToDictionary(
+                outerGroup => outerGroup.Key, // Key for the outer dictionary (DayOfWeek)
+                outerGroup => outerGroup.ToDictionary(
+                    innerGroup => innerGroup.Key.Hour, // Key for the inner dictionary (Hour)
+                    innerGroup => innerGroup.ToList() // Convert each subgroup to a list of events
+                )
+            );
 
-        return View("~/Views/Calendar/Calendar.cshtml", eventsByDate);
 
+        // Return the model to the view
+        return View("~/Views/Calendar/Calendar.cshtml", eventsByDayAndHour);
     }
 
-    // POST: Employee/UpdateCalendar
+
+
+
+
+    // POST: Employee/Calendar
     [HttpPost]
     public IActionResult Calendar(List<CalendarEvent> updatedEvents)
     {
@@ -65,26 +94,50 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    public IActionResult AddTimeSlot(DateTime date, TimeSpan time, string status)
+    public IActionResult ChangeStatus(int eventId, string newStatus, DayOfWeek dayOfWeek, int hour)
     {
-        // Retrieve the currently logged-in employee
-        var employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // Retrieve the employee ID from the authenticated user's claims
+        string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        // Create a new CalendarEvent object
-        var newEvent = new CalendarEvent
+        // Retrieve the event from the database based on day of the week and hour
+        var calendarEvent = _context.CalendarEvents
+            .FirstOrDefault(e => e.CalendarEventId == eventId && e.DayOfWeek == dayOfWeek && e.Hour == hour);
+
+        if (calendarEvent != null)
         {
-            Date = date.Date + time, // Combine the date and time
-            EmployeeId = employeeId,
-            AvailabilityStatus = status,
-        };
+            // Update the event's status
+            calendarEvent.AvailabilityStatus = newStatus;
 
-        // Add the new event to the database
-        _context.CalendarEvents.Add(newEvent);
-        _context.SaveChanges();
+            // Save the changes to the database
+            _context.SaveChanges();
 
-        // Redirect to the Calendar view
-        return RedirectToAction("Calendar");
+            // Return a JSON response indicating success
+            return Json(new { success = true });
+        }
+        else
+        {
+            // If the event was not found, create a new event
+            var newEvent = new CalendarEvent
+            {
+                DayOfWeek = dayOfWeek,
+                Hour = hour,
+                AvailabilityStatus = newStatus,
+                EmployeeId = employeeId,
+                // Set other required properties
+            };
+
+            // Add the new event to the database
+            _context.CalendarEvents.Add(newEvent);
+
+            // Save the changes to the database
+            _context.SaveChanges();
+
+            // Return a JSON response indicating success
+            return Json(new { success = true });
+        }
     }
+
+
 
 }
 
