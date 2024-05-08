@@ -34,46 +34,6 @@ public class EmployeeController : Controller
         return Json(eventsForDate);
     }
 
-
-
-    // GET: Employee/Calendar
-    // public IActionResult Calendar()
-    // {
-    //     // Retrieve logged-in employee's ID
-    //     string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     ViewData["EmployeeId"] = employeeId;
-
-    //     // Calculate the start and end dates of the current week
-    //     DateTime startDate = DateTime.Today.StartOfWeek(DayOfWeek.Monday);
-    //     DateTime endDate = startDate.AddDays(6);
-
-    //     // Query the database for CalendarEvent instances occurring within the specified date range
-    //     // var events = _context.CalendarEvents
-    //     //     .Where(e => e.DayOfWeek >= startDate.DayOfWeek && e.DayOfWeek <= endDate.DayOfWeek)
-    //     //     .ToList();
-
-    //     var events = _context.CalendarEvents
-    //     .Where(e => e.EmployeeId == employeeId && e.DayOfWeek >= startDate.DayOfWeek && e.DayOfWeek <= endDate.DayOfWeek)
-    //     .ToList();
-
-    //     // Group the events by day of the week and hour of the day
-    //     // Group the events by day of the week and hour of the day
-    //     var eventsByDayAndHour = events
-    //         .GroupBy(e => new { e.DayOfWeek, e.Hour }) // Group by DayOfWeek and Hour
-    //         .GroupBy(g => g.Key.DayOfWeek, g => g)
-    //         .ToDictionary(
-    //             outerGroup => outerGroup.Key, // Key for the outer dictionary (DayOfWeek)
-    //             outerGroup => outerGroup.ToDictionary(
-    //                 innerGroup => innerGroup.Key.Hour, // Key for the inner dictionary (Hour)
-    //                 innerGroup => innerGroup.ToList() // Convert each subgroup to a list of events
-    //             )
-    //         );
-
-
-    //     // Return the model to the view
-    //     return View("~/Views/Calendar/Calendar.cshtml", eventsByDayAndHour);
-    // }
-
     // GET: Employee/Calendar
     public IActionResult Calendar()
     {
