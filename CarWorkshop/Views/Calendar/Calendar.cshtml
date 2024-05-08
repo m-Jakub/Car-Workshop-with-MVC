@@ -76,10 +76,15 @@
                     <td class="time-column">@hour:00 - @(hour + 1):00</td>
                     @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
                     {
+                        // Retrieve the logged-in employee ID
+                        string employeeId = (string)ViewData["EmployeeId"];
+
+                        // Filter events for the given day of the week and hour
                         var eventsForHour = Model.TryGetValue(dayOfWeek, out var eventsForDay)
                         && eventsForDay.TryGetValue(hour, out var events)
-                        ? events
+                        ? events.Where(e => e.EmployeeId == employeeId).ToList()
                         : new List<CalendarEvent>();
+
 
                         <td class="day-column"
                             onclick="showPopup(@hour, '@dayOfWeek', '@(eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? "Unavailable")', @(eventsForHour.FirstOrDefault()?.CalendarEventId ?? 0))">
@@ -116,8 +121,8 @@
                     <!-- Form for changing status -->
                     <form id="changeStatusForm" method="post" onsubmit="submitChangeStatus(event)">
                         <input type="hidden" id="eventId" name="eventId">
-                        <input type="hidden" id="date" name="date">
                         <input type="hidden" id="hour" name="hour">
+                        <input type="hidden" id="dayOfWeek" name="dayOfWeek">
                         <div class="mb-3">
                             <label for="newStatus" class="form-label">Change Status:</label>
                             <select id="newStatus" name="newStatus" class="form-select">
@@ -148,6 +153,7 @@
             document.getElementById('eventId').value = eventId;
             document.getElementById('newStatus').value = status;
             document.getElementById('hour').value = hour;
+            document.getElementById('dayOfWeek').value = dayOfWeek;
 
             // Show the popup modal
             $('#popupModal').modal('show');
@@ -179,8 +185,8 @@
                 });
         }
 
-        function fetchEventsForDate(date) {
-            fetch(`/Employee/GetEventsForDate?date=${date.toISOString()}`)
+        function fetchEventsForDayOfWeek(dayOfWeek) {
+            fetch(`/Employee/GetEventsForDayOfWeek?dayOfWeek=${dayOfWeek}`)
                 .then(response => response.json())
                 .then(data => {
                     // Process the data and update the calendar view
@@ -191,15 +197,15 @@
                 });
         }
 
+
         function updateCalendarView(data) {
             // Clear existing calendar view data (if necessary)
             // Then, process the data to fill the cells with event statuses
 
             // Iterate through the data and update the cells in the view
             data.forEach(event => {
-                const eventTime = new Date(event.Date); // Convert event.Date to a Date object
                 const hour = eventTime.getHours(); // Get the hour from the event's time
-                const dayOfWeek = eventTime.getDay(); // Get the day of the week from the event's date
+                const dayOfWeek = eventTime.getDay(); // Get the day of the week from the event's time
 
                 // Find the corresponding cell in the table based on hour and dayOfWeek
                 const cell = document.querySelector(`td[data-hour="${hour}"][data-dayofweek="${dayOfWeek}"]`);

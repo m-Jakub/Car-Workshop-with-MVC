@@ -22,6 +22,9 @@ public class EmployeeController : Controller
     [HttpGet]
     public IActionResult GetEventsForDate(DayOfWeek dayOfWeek)
     {
+        // Retrieve logged-in employee's ID
+        string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         // Query the database for CalendarEvent instances occurring on the specified day of the week
         var eventsForDate = _context.CalendarEvents
             .Where(e => e.DayOfWeek == dayOfWeek) // Filter by day of the week
@@ -36,14 +39,22 @@ public class EmployeeController : Controller
     // GET: Employee/Calendar
     public IActionResult Calendar()
     {
+        // Retrieve logged-in employee's ID
+        string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        ViewData["EmployeeId"] = employeeId;
+
         // Calculate the start and end dates of the current week
         DateTime startDate = DateTime.Today.StartOfWeek(DayOfWeek.Monday);
         DateTime endDate = startDate.AddDays(6);
 
         // Query the database for CalendarEvent instances occurring within the specified date range
+        // var events = _context.CalendarEvents
+        //     .Where(e => e.DayOfWeek >= startDate.DayOfWeek && e.DayOfWeek <= endDate.DayOfWeek)
+        //     .ToList();
+
         var events = _context.CalendarEvents
-            .Where(e => e.DayOfWeek >= startDate.DayOfWeek && e.DayOfWeek <= endDate.DayOfWeek)
-            .ToList();
+        .Where(e => e.EmployeeId == employeeId && e.DayOfWeek >= startDate.DayOfWeek && e.DayOfWeek <= endDate.DayOfWeek)
+        .ToList();
 
         // Group the events by day of the week and hour of the day
         // Group the events by day of the week and hour of the day
@@ -61,36 +72,6 @@ public class EmployeeController : Controller
 
         // Return the model to the view
         return View("~/Views/Calendar/Calendar.cshtml", eventsByDayAndHour);
-    }
-
-
-
-
-
-    // POST: Employee/Calendar
-    [HttpPost]
-    public IActionResult Calendar(List<CalendarEvent> updatedEvents)
-    {
-        if (ModelState.IsValid)
-        {
-            // Update events in the database
-            foreach (var updatedEvent in updatedEvents)
-            {
-                var existingEvent = _context.CalendarEvents.Find(updatedEvent.CalendarEventId);
-                if (existingEvent != null)
-                {
-                    existingEvent.AvailabilityStatus = updatedEvent.AvailabilityStatus;
-                    _context.Update(existingEvent);
-                }
-            }
-
-            _context.SaveChanges();
-
-            return RedirectToAction("Calendar");
-        }
-
-        // If model state is not valid, return to the calendar view with errors
-        return View("Calendar", updatedEvents);
     }
 
     [HttpPost]
@@ -117,13 +98,12 @@ public class EmployeeController : Controller
         else
         {
             // If the event was not found, create a new event
-            var newEvent = new CalendarEvent
+            CalendarEvent newEvent = new CalendarEvent
             {
                 DayOfWeek = dayOfWeek,
                 Hour = hour,
                 AvailabilityStatus = newStatus,
                 EmployeeId = employeeId,
-                // Set other required properties
             };
 
             // Add the new event to the database
