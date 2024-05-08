@@ -69,6 +69,7 @@
                 }
             </tr>
         </thead>
+
         <tbody>
             @for (int hour = 6; hour < 20; hour++)
             {
@@ -76,36 +77,32 @@
                     <td class="time-column">@hour:00 - @(hour + 1):00</td>
                     @foreach (DayOfWeek dayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
                     {
-                        // Retrieve the logged-in employee ID
-                        string employeeId = (string)ViewData["EmployeeId"];
-
-                        // Filter events for the given day of the week and hour
+                        // Retrieve the events for the day of the week and hour
                         var eventsForHour = Model.TryGetValue(dayOfWeek, out var eventsForDay)
                         && eventsForDay.TryGetValue(hour, out var events)
-                        ? events.Where(e => e.EmployeeId == employeeId).ToList()
+                        ? events
                         : new List<CalendarEvent>();
 
+                        // Retrieve the event for the logged-in employee
+                        var eventForHour = eventsForHour.FirstOrDefault();
 
+                        // Render the cell based on the retrieved event
                         <td class="day-column"
-                            onclick="showPopup(@hour, '@dayOfWeek', '@(eventsForHour.FirstOrDefault()?.AvailabilityStatus ?? "Unavailable")', @(eventsForHour.FirstOrDefault()?.CalendarEventId ?? 0))">
-                            @if (eventsForHour != null && eventsForHour.Any())
+                            onclick="showPopup(@hour, '@dayOfWeek', '@(eventForHour?.AvailabilityStatus ?? "Unavailable")', @(eventForHour?.CalendarEventId ?? 0))">
+                            @if (eventForHour != null)
                             {
-                                @foreach (var e in eventsForHour)
-                                {
-                                    <div>@e.AvailabilityStatus</div>
-                                }
+                                <div>@eventForHour.AvailabilityStatus</div>
                             }
                             else
                             {
                                 <div class="empty-cell">&nbsp;</div> <!-- Placeholder for empty cell -->
                             }
                         </td>
-
-
                     }
                 </tr>
             }
         </tbody>
+
     </table>
 
     <!-- Popup modal -->
@@ -184,19 +181,6 @@
                     alert('Failed to change status: ' + error.message);
                 });
         }
-
-        function fetchEventsForDayOfWeek(dayOfWeek) {
-            fetch(`/Employee/GetEventsForDayOfWeek?dayOfWeek=${dayOfWeek}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Process the data and update the calendar view
-                    updateCalendarView(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching events:', error);
-                });
-        }
-
 
         function updateCalendarView(data) {
             // Clear existing calendar view data (if necessary)
