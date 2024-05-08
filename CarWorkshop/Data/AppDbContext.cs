@@ -27,6 +27,7 @@ namespace CarWorkshop.Data
 				.HasForeignKey(c => c.EmployeeId);
 		}
 		public DbSet<CalendarEvent> CalendarEvents { get; set; }
+	    public DbSet<CarWorkshop.Models.Ticket> Ticket { get; set; } = default!;
 
 	}
 }

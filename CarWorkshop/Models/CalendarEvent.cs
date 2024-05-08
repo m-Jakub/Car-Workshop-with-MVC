@@ -21,5 +21,7 @@ namespace CarWorkshop.Models
 
         [Required]
         public AppUser? Employee { get; set; }
+
+		public int? TicketId { get; set; } // Ticket ID (if the event is associated with a ticket)
     }
 }
