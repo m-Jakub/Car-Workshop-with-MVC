@@ -4,9 +4,8 @@
     ViewData["Title"] = "Ticket Management";
 }
 
-<h1>Ticket Management</h1>
+<h1>Available Tickets</h1>
 
-    <a asp-action="Create" class="btn btn-primary mb-3">Add Ticket</a>
 <table class="table">
 
     <head>
@@ -106,9 +105,11 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.TicketId" class="btn btn-secondary">Edit</a>
-                    <a asp-action="Details" asp-route-id="@item.TicketId" class="btn btn-secondary">Details</a>
-                    <a asp-action="Delete" asp-route-id="@item.TicketId" class="btn btn-danger">Delete</a>
+                    <form asp-action="AcceptTicket" method="post">
+                        <input type="hidden" name="id" value="@item.TicketId" />
+                        <button type="submit" class="btn btn-secondary">Accept Ticket</button>
+                    </form>
+
                 </td>
             </tr>
         }

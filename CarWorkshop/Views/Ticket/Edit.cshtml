@@ -34,19 +34,13 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="EmployeeId" class="control-label"></label>
-                <input asp-for="EmployeeId" class="form-control" />
-                <span asp-validation-for="EmployeeId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CalendarEventIds" class="control-label"></label>
-                <input asp-for="CalendarEventIds" class="form-control" />
-                <span asp-validation-for="CalendarEventIds" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="State" class="control-label"></label>
-                <input asp-for="State" class="form-control" />
-                <span asp-validation-for="State" class="text-danger"></span>
+                <select asp-for="State" class="form-control">
+                    <option value="Created">Created</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Done">Done</option>
+                    <option value="Closed">Closed</option>
+                </select>
             </div>
             <div class="form-group">
                 <label asp-for="EstimateDescription" class="control-label"></label>
@@ -60,9 +54,13 @@
             </div>
             <div class="form-group">
                 <label asp-for="EstimateAccepted" class="control-label"></label>
-                <input asp-for="EstimateAccepted" class="form-control" />
+                <select asp-for="EstimateAccepted" class="form-control">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
                 <span asp-validation-for="EstimateAccepted" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="PricePaid" class="control-label"></label>
                 <input asp-for="PricePaid" class="form-control" />
@@ -80,5 +78,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
