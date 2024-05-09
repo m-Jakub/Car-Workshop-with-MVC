@@ -25,6 +25,9 @@ namespace CarWorkshop.Models
 
         public string ?EmployeeId { get; set; } // Employee assigned to repair the vehicle
 
+        [DisplayName("Assigned Employee")]
+        public string ?EmployeeName { get; set; } = "Not assigned"; // Name of the employee assigned to repair the vehicle
+
         // List of CalendarEvent IDs for scheduled times
          public List<int> CalendarEventIds { get; set; } = new List<int>();
 

@@ -168,12 +168,16 @@ namespace CarWorkshop.Controllers
                 calendarEvent.TicketId = request.TicketId;
             }
 
-            // Update ticket's state to "In Progress"
+            // Update the ticket
             var ticket = await _context.Ticket.FindAsync(request.TicketId);
             if (ticket != null)
             {
                 ticket.State = "In Progress";
             }
+
+            ticket.EmployeeId = employeeId;
+            ticket.EmployeeName = User.Identity.Name;
+            ticket.CalendarEventIds = request.EventIds;
 
             // Save changes to the database
             await _context.SaveChangesAsync();
