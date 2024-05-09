@@ -28,25 +28,26 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Amount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UnitPrice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalPrice)
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.PartId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.PartId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.PartId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Amount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UnitPrice)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TotalPrice)
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.PartId">Edit</a> |
+                    <a asp-action="Details" asp-route-TicketId="@ViewData["TicketId"]" asp-route-id="@item.PartId">Details</a> |
+                    <a asp-action="Delete" asp-route-TicketId="@ViewData["TicketId"]" asp-route-id="@item.PartId">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

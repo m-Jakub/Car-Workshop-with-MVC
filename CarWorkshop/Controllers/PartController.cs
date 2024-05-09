@@ -102,6 +102,7 @@ namespace CarWorkshop.Controllers
             {
                 return NotFound();
             }
+
             return View(part);
         }
 
@@ -116,6 +117,9 @@ namespace CarWorkshop.Controllers
             {
                 return NotFound();
             }
+            
+            var ticketId = _context.Part.Where(p => p.PartId == id).Select(p => p.TicketId).FirstOrDefault();
+            part.TicketId = ticketId;
 
             if (ModelState.IsValid)
             {
@@ -135,13 +139,14 @@ namespace CarWorkshop.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                
+                return RedirectToAction(nameof(Index), new { ticketId = ticketId });
             }
             return View(part);
         }
 
         // GET: Part/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? ticketId, int? id)
         {
             if (id == null)
             {
@@ -150,10 +155,13 @@ namespace CarWorkshop.Controllers
 
             var part = await _context.Part
                 .FirstOrDefaultAsync(m => m.PartId == id);
+
             if (part == null)
             {
                 return NotFound();
             }
+
+            ViewData["TicketId"] = ticketId;
 
             return View(part);
         }
@@ -164,13 +172,14 @@ namespace CarWorkshop.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var part = await _context.Part.FindAsync(id);
+            int TicketId = part.TicketId;
             if (part != null)
             {
                 _context.Part.Remove(part);
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index), new { ticketId = TicketId });
         }
 
         private bool PartExists(int id)
