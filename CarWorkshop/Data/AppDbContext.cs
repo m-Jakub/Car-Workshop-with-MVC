@@ -28,6 +28,7 @@ namespace CarWorkshop.Data
 		}
 		public DbSet<CalendarEvent> CalendarEvents { get; set; }
 	    public DbSet<CarWorkshop.Models.Ticket> Ticket { get; set; } = default!;
+	    public DbSet<CarWorkshop.Models.Part> Part { get; set; } = default!;
 
 	}
 }

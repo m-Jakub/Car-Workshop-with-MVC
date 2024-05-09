@@ -66,5 +66,8 @@ namespace CarWorkshop.Models
 
         [DisplayName("Total Price")]
         public decimal TotalPrice => (decimal)Amount * UnitPrice; // Automatically calculate total price
+
+        [Required]
+        public int TicketId { get; set; } // Foreign key
     }
 }
