@@ -153,5 +153,18 @@ namespace CarWorkshop.Controllers
         {
             return _context.Ticket.Any(e => e.TicketId == id);
         }
+
+        // GET: Ticket/Parts/1
+        public IActionResult Parts(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            // Redirect the request to PartController's Index action with ticketId as the route parameter
+            return RedirectToAction("Index", "Part", new { ticketId = id });
+        }
+
     }
 }

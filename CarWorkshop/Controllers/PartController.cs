@@ -20,9 +20,23 @@ namespace CarWorkshop.Controllers
         }
 
         // GET: Part
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? ticketId)
         {
-            return View(await _context.Part.ToListAsync());
+            if (ticketId == null)
+            {
+                return NotFound();
+            }
+
+            var ticket = await _context.Ticket.FindAsync(ticketId);
+            if (ticket == null)
+            {
+                return NotFound();
+            }
+
+            var parts = await _context.Part.Where(p => p.TicketId == ticketId).ToListAsync();
+            ViewData["TicketId"] = ticketId;
+
+            return View(parts);
         }
 
         // GET: Part/Details/5
@@ -44,8 +58,17 @@ namespace CarWorkshop.Controllers
         }
 
         // GET: Part/Create
-        public IActionResult Create()
+        public IActionResult Create(int? ticketId)
         {
+            if (ticketId == null)
+            {
+                // Handle the case when ticketId is null
+                return NotFound();
+            }
+
+            // Pass the ticketId to the view using ViewData
+            ViewData["TicketId"] = ticketId;
+
             return View();
         }
 
@@ -54,16 +77,17 @@ namespace CarWorkshop.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PartId,Name,Amount,UnitPrice")] Part part)
+        public async Task<IActionResult> Create([Bind("Name,Amount,UnitPrice,TicketId")] Part part)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(part);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { ticketId = part.TicketId });
             }
             return View(part);
         }
+
 
         // GET: Part/Edit/5
         public async Task<IActionResult> Edit(int? id)

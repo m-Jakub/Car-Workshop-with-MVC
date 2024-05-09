@@ -7,7 +7,7 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" asp-route-TicketId="@ViewData["TicketId"]">Create New Part</a>
 </p>
 <table class="table">
     <thead>
@@ -20,6 +20,9 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.UnitPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalPrice)
             </th>
             <th></th>
         </tr>
@@ -36,6 +39,8 @@
             <td>
                 @Html.DisplayFor(modelItem => item.UnitPrice)
             </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalPrice)
             <td>
                 <a asp-action="Edit" asp-route-id="@item.PartId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.PartId">Details</a> |
