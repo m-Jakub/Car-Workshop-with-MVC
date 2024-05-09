@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Security.Claims;
 using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace CarWorkshop.Controllers
 {
@@ -23,7 +25,7 @@ namespace CarWorkshop.Controllers
         // GET: Ticket
         public async Task<IActionResult> AvailableTickets()
         {
-            return View(await _context.Ticket.Where(t => t.State == "Created").ToListAsync());
+            return View(await _context.Ticket.ToListAsync());
         }
 
         // POST: Employee/AcceptTicket/5
@@ -41,43 +43,27 @@ namespace CarWorkshop.Controllers
 
             if (ticket != null && ticket.State == "Created")
             {
-                ticket.State = "In Progress";
-                ticket.EmployeeId = employeeId;
-
-                await _context.SaveChangesAsync();
-
-                // update the employee's calendar to mark the chosen time slot as busy
-                // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                // Redirect to a relevant page (e.g., the list of available tickets)
+                return RedirectToAction("Calendar", "Employee", new { chooseSlotsOnly = true, ticketId = id });
+            }
+            if (ticket != null && ticket.State != "Created")
+            {
                 return RedirectToAction("AvailableTickets");
             }
 
             return NotFound();
         }
 
-        [HttpGet]
-        public IActionResult GetEventsForDate(DayOfWeek dayOfWeek)
-        {
-            // Retrieve logged-in employee's ID
-            string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Query the database for CalendarEvent instances occurring on the specified day of the week
-            var eventsForDate = _context.CalendarEvents
-                .Where(e => e.DayOfWeek == dayOfWeek) // Filter by day of the week
-                .ToList(); // Execute the query and retrieve the list
-
-            // Return the list as a JSON response
-            return Json(eventsForDate);
-        }
-
         // GET: Employee/Calendar
-        public IActionResult Calendar()
+        public IActionResult Calendar(bool chooseSlotsOnly = false, int? ticketId = null)
         {
             // Retrieve logged-in employee ID
             string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             ViewData["EmployeeId"] = employeeId;
+
+            if (ticketId.HasValue)
+            {
+                ViewData["TicketId"] = ticketId.Value;
+            }
 
             // Calculate start and end dates of the current week
             DateTime startDate = DateTime.Today.StartOfWeek(DayOfWeek.Monday);
@@ -99,10 +85,15 @@ namespace CarWorkshop.Controllers
                         innerGroup => innerGroup.ToList() // Convert each subgroup to a list of events
                     )
                 );
-
-            return View("~/Views/Calendar/Calendar.cshtml", eventsByDayAndHour);
+            if (!chooseSlotsOnly)
+            {
+                return View("~/Views/Calendar/Calendar.cshtml", eventsByDayAndHour);
+            }
+            else
+            {
+                return View("~/Views/Calendar/ChooseCalendarSlots.cshtml", eventsByDayAndHour);
+            }
         }
-
 
         [HttpPost]
         public IActionResult ChangeStatus(int eventId, string newStatus, DayOfWeek dayOfWeek, int hour)
@@ -147,8 +138,58 @@ namespace CarWorkshop.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SubmitSelectedEvents([FromBody] SubmitEventsRequest request)
+        {
+            // Validate the request
+            if (request == null || request.EventIds == null || request.EventIds.Count == 0)
+            {
+                return BadRequest(new { success = false, error = "No events selected or invalid request" });
+            }
+
+            // Retrieve the employee ID from the authenticated user's claims
+            string? employeeId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Update the events that match the specified EventIds and belong to the authenticated employee
+            var eventsToUpdate = await _context.CalendarEvents
+                .Where(e => request.EventIds.Contains(e.CalendarEventId) && e.EmployeeId == employeeId)
+                .ToListAsync();
+
+            // If no events were found, return an error
+            if (eventsToUpdate.Count == 0)
+            {
+                return NotFound(new { success = false, error = "No matching events found" });
+            }
+
+            // Update each event's status and ticket ID
+            foreach (var calendarEvent in eventsToUpdate)
+            {
+                calendarEvent.AvailabilityStatus = "Busy";
+                calendarEvent.TicketId = request.TicketId;
+            }
+
+            // Update ticket's state to "In Progress"
+            var ticket = await _context.Ticket.FindAsync(request.TicketId);
+            if (ticket != null)
+            {
+                ticket.State = "In Progress";
+            }
+
+            // Save changes to the database
+            await _context.SaveChangesAsync();
+
+            // Return a JSON response indicating success
+            return Ok(new { success = true });
+        }
 
 
     }
+
+    public class SubmitEventsRequest
+    {
+        public int TicketId { get; set; }
+        public List<int> EventIds { get; set; } // List of event IDs to update
+    }
+
 
 }

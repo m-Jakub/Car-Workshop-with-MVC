@@ -105,11 +105,13 @@
                     }
                 </td>
                 <td>
-                    <form asp-action="AcceptTicket" method="post">
-                        <input type="hidden" name="id" value="@item.TicketId" />
-                        <button type="submit" class="btn btn-secondary">Accept Ticket</button>
-                    </form>
-
+                    @if (item.State == "Created")
+                    {
+                        <form asp-action="AcceptTicket" method="post">
+                            <input type="hidden" name="id" value="@item.TicketId" />
+                            <button type="submit" class="btn btn-secondary">Accept Ticket</button>
+                        </form>
+                    }
                 </td>
             </tr>
         }
