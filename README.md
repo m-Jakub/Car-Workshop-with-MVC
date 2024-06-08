@@ -64,7 +64,11 @@ This project is a web-based application for managing a car workshop, developed u
 - **Data**: Database context and migrations.
 
 ## Screenshots
+![login](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/778012f3-b354-421c-a020-978c8ee15378)
+![employee_management](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/44230a45-889e-465a-aaf9-d95af0d9eb62)
+![ticket_management](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/24c24bb0-5e20-45a7-8f60-bd8c7d2bac2d)
+![creating_ticket](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/0cc5c472-47b8-40c0-bbe2-ad96c073b2a6)
+![calendar](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/62fc2992-84ea-47ce-98d2-42166dbb8a21)
+![accepting_ticket](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/4f896a26-3ae7-47ab-9877-57e90c83b5eb)
+![choosing_slots](https://github.com/m-Jakub/Car-Workshop-with-MVC/assets/133584402/46146d79-0513-46c6-ae87-2d9f9e681c58)
 
-![Employee Management](screenshots/employee_management.png)
-![Ticket Management](screenshots/ticket_management.png)
-![Create Ticket](screenshots/create_ticket.png)
