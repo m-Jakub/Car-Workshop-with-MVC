@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a web-based application for managing a car workshop, developed using Microsoft ASP.NET Core MVC. The application allows for efficient management of employees, tickets, and parts within a car workshop environment. The project was developed as part of the Graphical User Interfaces (EGUI) course at the Computer Science Institute, with a focus on implementing robust CRUD operations, user authentication, and detailed entity management.
+This project is a web-based application for managing a car workshop, developed using Microsoft ASP.NET Core MVC. The application allows for efficient management of employees, tickets, and parts within a car workshop environment. The project was developed as part of the Graphical User Interfaces (EGUI) course, with a focus on implementing robust CRUD operations, user authentication, and detailed entity management.
 
 ## Features
 
